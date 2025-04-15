@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>経路探索アプリ</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="max-w-3xl mx-auto py-12">
+        <h1 class="text-3xl font-bold mb-6 text-center">経路探索アプリ</h1>
+
+        <form id="stationForm" class="bg-white shadow-lg rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">駅を選択してください（複数可）</h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                {% for station in stations %}
+                <label class="inline-flex items-center">
+                    <input type="checkbox" name="stations" value="{{ station }}" class="mr-2">
+                    {{ station }}
+                </label>
+                {% endfor %}
+            </div>
+            <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded">検索</button>
+        </form>
+
+        <div id="result" class="space-y-4"></div>
+    </div>
+
+    <script>
+    document.getElementById("stationForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const selected = [...document.querySelectorAll("input[name='stations']:checked")].map(cb => cb.value);
+        if (selected.length < 2) {
+            alert("2駅以上選択してください。");
+            return;
+        }
+        const res = await axios.post("/search", { stations: selected });
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = "";
+
+        res.data.forEach(route => {
+            const el = document.createElement("div");
+            el.className = "bg-white p-4 rounded shadow";
+            el.innerHTML = `
+                <h3 class="text-lg font-bold">${route.from} → ${route.to}</h3>
+                <p>🕒 最短時間: ${route.min_time}分（${route.time_path.join(" → ")}）</p>
+                <p>💴 最安値: ${route.min_cost}円（${route.cost_path.join(" → ")}）</p>
+            `;
+            resultDiv.appendChild(el);
+        });
+    });
+    </script>
+</body>
+</html>
