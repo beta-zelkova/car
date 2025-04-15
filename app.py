@@ -1,4 +1,3 @@
-# app.py
 from flask import Flask, render_template, request, jsonify
 import csv
 import heapq
@@ -12,13 +11,12 @@ def load_data_from_csv(path):
         reader = csv.DictReader(f)
         for row in reader:
             graph[row['from']].append({
-                'for': row['to'],
+                'to': row['to'],
                 'time': int(row['time']),
                 'cost': int(row['cost'])
             })
     return graph
 
-# 経路探索ロジック
 def min_time(graph, start, goal):
     heap = [(0, start, [])]
     visited = {}
@@ -31,7 +29,7 @@ def min_time(graph, start, goal):
         if station == goal:
             return current_time, current_path
         for edge in graph.get(station, []):
-            heapq.heappush(heap, (current_time + edge['time'], edge['for'], current_path))
+            heapq.heappush(heap, (current_time + edge['time'], edge['to'], current_path))
     return float('inf'), []
 
 def min_cost(graph, start, goal):
@@ -45,8 +43,8 @@ def min_cost(graph, start, goal):
         if station == goal:
             return current_cost, path_so_far
         for edge in graph.get(station, []):
-            new_path = path_so_far + [edge['for']]
-            heapq.heappush(heap, (current_cost + edge['cost'], edge['for'], new_path))
+            new_path = path_so_far + [edge['to']]
+            heapq.heappush(heap, (current_cost + edge['cost'], edge['to'], new_path))
     return float('inf'), []
 
 def find_all_routes(graph, selected_stations):
